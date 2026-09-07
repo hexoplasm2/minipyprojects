@@ -60,6 +60,7 @@ def multiChoice(*options):
         elif key == "down" and selected < len(options) - 1:
             selected += 1
         elif key == "enter":
+            os.system("cls" if os.name == "nt" else "clear")
             return selected, options[selected]
         elif key == "q":
             return None, None
