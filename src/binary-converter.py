@@ -1,9 +1,19 @@
 # Unfinished
 
-inp = input("Enter value you are converting with suffix (e.g. 1 megabyte): ")
-split = inp.split()
+inp = input("Enter value you are converting with suffix (e.g. 1 gigabyte): ").lower().split()
+to = input("Enter what you are converting to: ").lower()
+
+# To bytes
+if inp[1] in ("gigabyte","gigabyte","gb"):
+    processing = float(inp[0])*8e+9
+elif inp[1] in ("megabyte","megabytes","mb"):
+    processing = float(inp[0])*8e+6
+
+# To final
+if to in ("megabyte","megabytes","mb"):
+    processing/=8e+6
+elif to in ("gigabyte","gigabytes","gb"):
+    processing/=8e+9
 
 
-match input("Enter what you are converting to: ").lower():
-    case "megabyte"|"megabytes": print(f"{split[0]} {split[1]} = {int(split[0])/100:g} megabytes")
-    case _: print("Invalid")
+print(f"{inp[0]} {inp[1]} = {processing:g} {to}")
