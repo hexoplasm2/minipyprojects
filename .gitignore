@@ -2,10 +2,10 @@
 
 !.gitignore
 !README.md
+!pyproject.toml
 
 !src/
 !src/**
 
 .venv/
 .env
-pyproject.toml
