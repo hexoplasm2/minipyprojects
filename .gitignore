@@ -6,7 +6,5 @@
 !src/
 !src/**
 
-**/__pycache__/
-**/*.py[oc]
-
 .venv/
+.env

@@ -37,7 +37,8 @@ def getKey():
     
     return ch
 
-
+def clear():
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 
@@ -45,7 +46,7 @@ def multiChoice(*options):
     selected = 0
 
     while True:
-        os.system("cls" if os.name == "nt" else "clear")
+        clear()
 
         for k,v in enumerate(options):
             if k == selected:
@@ -60,7 +61,7 @@ def multiChoice(*options):
         elif key == "down" and selected < len(options) - 1:
             selected += 1
         elif key == "enter":
-            os.system("cls" if os.name == "nt" else "clear")
+            clear()
             return selected, options[selected]
         elif key == "q":
             return None, None

@@ -1,8 +1,11 @@
+import hexotools as h
+
+h.clear()
 print("This converts characters on your keyboard to a decimal number or a decimal number to a character while following the ASCII system.")
 input("Press Enter to continue: ")
-inp = input("Enter a character(A)/decimal(65)/hexadecimal(0x41)/binary(0b1000001) number: ")
 
 while True:
+    inp = input("Enter a character(A)/decimal(65)/hexadecimal(0x41)/binary(0b1000001) number: ")
     try:
         x = int(inp,0)
         y = int(inp,16)
