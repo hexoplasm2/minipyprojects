@@ -1,4 +1,8 @@
 import os,sys
+from rich.console import Console
+from rich.live import Live
+
+console = Console(highlight=False)
 
 try:
     import msvcrt
@@ -16,6 +20,8 @@ except ImportError:
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, tsettings)
         return ch
+
+
 
 def getKey():
     ch = getch()
@@ -37,36 +43,51 @@ def getKey():
     
     return ch
 
+
+
 def clear():
     os.system("cls" if os.name == "nt" else "clear")
 
 
 
 def multiChoice(*options):
+    clear()
     selected = 0
 
-    while True:
-        clear()
-
+    def render():
+        menu_text = []
         for k,v in enumerate(options):
             if k == selected:
-                print(f"> {v}")
+                menu_text.append(f"[yellow]>[/] [white bold]{v}[/]")
             else:
-                print(f"  {v}")
-        
-        key = getKey()
-        
-        if key == "up" and selected > 0:
-            selected -= 1
-        elif key == "down" and selected < len(options) - 1:
-            selected += 1
-        elif key == "enter":
-            clear()
-            return selected, options[selected]
-        elif key == "q":
-            return None, None
+                menu_text.append(f"  [white]{v}[/]")
+        return "\n".join(menu_text)
 
+    with Live(render(), console=console, auto_refresh=False) as live:
+        while True:
+            key = getKey()
+            
+            if key == "up" and selected > 0:
+                selected -= 1
+            elif key == "down" and selected < len(options) - 1:
+                selected += 1
+            elif key == "enter":
+                clear()
+                return selected, options[selected]
+            elif key == "q":
+                return None, None
+            live.update(render(), refresh=True)
+    console.clear()
 
+    try:
+        import termios
+        termios.tcflush(sys.stdin, termios.TCIFLUSH)
+    except ImportError:
+        import msvcrt
+        while msvcrt.kbhit():
+            msvcrt.getch()
+
+    return selected, options[selected]
 
 def main():
     chosen = multiChoice("First", "Second", "Third")
