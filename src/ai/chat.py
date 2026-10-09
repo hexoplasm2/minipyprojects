@@ -5,15 +5,21 @@ from rich.live import Live
 from rich.console import Console, Group
 from rich.markdown import Markdown
 from rich.text import Text
+from os import environ
 
 # Later planning on adding API support
 load_dotenv()
 console = Console()
 
-ollama = OpenAI(base_url="http://localhost:11434/v1",api_key="ollama")
+# client = OpenAI(base_url="http://localhost:11434/v1",api_key="ollama")
+
+client = OpenAI(
+    api_key=environ.get('GROQ_API_KEY'),
+    base_url="https://api.groq.com/openai/v1"
+)
 
 def main():
-    models_page = ollama.models.list()
+    models_page = client.models.list()
     models_list = models_page.data
     model_options = [model.id for model in models_list]
 
@@ -41,9 +47,9 @@ def main():
 
         recent_history = chat_history[-MAX_MEM:]
 
-        payload = [{"role": "system", "content": "You are a helpful, brief AI assistant that responds in plaintext, not markdown."}] + recent_history
+        payload = [{"role": "system", "content": "You are a helpful, brief AI assistant that responds in markdown only."}] + recent_history
 
-        response = ollama.chat.completions.create(
+        response = client.chat.completions.create(
             model=chosen[1],
             messages=payload,
             stream=True
@@ -52,11 +58,11 @@ def main():
         reply = ""
         label = Text("[Hex] ",style="bold yellow")
 
-        with Live(Markdown(reply), console=console, refresh_per_second=15) as live:
+        with Live(Group(label, Markdown(reply)), console=console, refresh_per_second=15) as live:
             for i in response:
                 if x:=i.choices[0].delta.content:
                     reply+=x
-                    live.update(Text.assemble(label,reply))
+                    live.update(Group(label, Markdown(reply)))
         
         chat_history.append({"role": "assistant", "content": reply})
         print()
