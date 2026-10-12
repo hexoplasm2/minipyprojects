@@ -1,11 +1,14 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 import gradio as gr
-import os
-import json
+import os, json, re
 
-load_dotenv(override=True)
-client = OpenAI(api_key=os.environ.get('GROQ_API_KEY'),base_url="https://api.groq.com/openai/v1")
+# Groq
+# load_dotenv(override=True)
+# client = OpenAI(api_key=os.environ.get('GROQ_API_KEY'),base_url="https://api.groq.com/openai/v1")
+
+# Ollama
+client = OpenAI(api_key="ollama",base_url="http://localhost:11434/v1")
 
 system_prompt = """
 You are a helpful assistant for an Airline called FlightAI.
@@ -13,20 +16,30 @@ Give short, courteous answers, no more than 1 sentence.
 Always be accurate. If you don't know the answer, say so.
 """
 
+MODEL = "qwen3.5:9b"
+
 def chat(message,history):
     history = [{"role":h["role"], "content": h["content"]} for h in history]
     messages = [{"role": "system", "content": system_prompt}] + history + [{"role":"user","content":message}]
-    response = client.chat.completions.create(model="openai/gpt-oss-20b",messages = messages,tools=tools)
-    print(response)
+    response = client.chat.completions.create(model=MODEL,messages = messages,tools=tools)
+    while response.choices[0].finish_reason == "tool_calls":
+        msg = response.choices[0].message
+        responses = handle_tool_calls(msg)
 
-    while response.choices[0].finish_reason=="tool_calls":
-        message = response.choices[0].message
-        responses = handle_tool_calls(message)
-        messages.append(message)
+        messages.append({
+            "content": msg.content or "",
+            "role": msg.role,
+            "tool_calls": msg.tool_calls
+        })
         messages.extend(responses)
-        response = client.chat.completions.create(model="openai/gpt-oss-20b",messages=messages, tools=tools)
 
-    return response.choices[0].message.content
+        response = client.chat.completions.create(model=MODEL,messages=messages, tools=tools)
+    
+
+    pcsd_output = re.sub(r"<think>.*?</think>", "", response.choices[0].message.content, flags=re.S)
+
+    # f"Reasoning:\n{response.choices[0].message.reasoning}\n\nResponse:\n{pcsd_output.strip()}" if you want reasoning - but it does include it in history which is unoptimal for context window
+    return pcsd_output.strip()
 
 ticket_prices = {"london":"£100","paris":"£200","berlin":"£300"}
 def get_ticket_price(city):
@@ -61,7 +74,5 @@ def handle_tool_calls(message):
                 "tool_call_id": i.id
             })
     return responses
-
-
 
 gr.ChatInterface(fn=chat).launch()
