@@ -62,7 +62,7 @@ def main():
             for i in response:
                 if x:=i.choices[0].delta.content:
                     reply+=x
-                    live.update(Group(label, Markdown(reply)))
+                    live.update(Text.assemble(label,reply))
         
         chat_history.append({"role": "assistant", "content": reply})
         print()
